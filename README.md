@@ -1,6 +1,11 @@
 # "Mimi" Gacha Cost Noter Bot
 
-A Discord bot designed to help you track and summarize your gaming and gacha expenditures directly from your Discord server. All logged data is seamlessly saved into a Google Spreadsheets document for easy viewing and management.
+<p align="center">
+  <img src="./readme images/mem.png" alt="Mimi Bot (real)" width="200">
+</p>
+
+
+A Discord bot (literally Mem fr) designed to help you track and summarize your gaming and gacha expenditures directly from your Discord server. All logged data is seamlessly saved into a Google Spreadsheets document for easy viewing and management.
 
 ## Features
 
@@ -27,7 +32,7 @@ A Discord bot designed to help you track and summarize your gaming and gacha exp
 1. Clone the repository:
    ```bash
    git clone https://github.com/naiynii/mimi-gacha-cost-noter.git
-   cd mimi-gacha-cost-tracker-bot
+   cd mimi-gacha-cost-noter
    ```
 
 2. Install dependencies:
