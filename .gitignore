@@ -1,0 +1,6 @@
+node_modules/
+.env
+google-credentials.json
+.DS_Store
+gaming_topup_bot_specs_fordev.md
+.agents
