@@ -5,10 +5,10 @@ const sheets = require('../utils/googleSheets');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('topup')
-    .setDescription('Record a new game top-up transaction')
+    .setDescription('Record top-up (ให้เมมบันทึกความทรงจำใหม่มิว!)')
     .addStringOption(option => 
       option.setName('game')
-        .setDescription('Select an existing game or type a new one')
+        .setDescription('Select game (พิมพ์ชื่อเกมใหม่ หรือเลือกจากความทรงจำมิว!)')
         .setAutocomplete(true)
         .setRequired(true)
     ),
@@ -32,43 +32,48 @@ module.exports = {
   async execute(interaction) {
     const gameName = interaction.options.getString('game');
     
-    // Passing game name in customId. Be careful of 100 character limit in customId!
-    // Safe custom ID: topup_modal_xxx
-    const safeGameName = encodeURIComponent(gameName).slice(0, 80);
+    // Safely truncate game name to fit Discord's 100 char limit for customId (topup_modal_ is 12 chars)
+    // Convert to array to handle emojis (surrogate pairs) properly without cutting them in half
+    let chars = Array.from(gameName);
+    while (encodeURIComponent(chars.join('')).length > 85) {
+      chars.pop();
+    }
+    const encodedGameName = encodeURIComponent(chars.join(''));
+
     const modal = new ModalBuilder()
-      .setCustomId(`topup_modal_${safeGameName}`)
-      .setTitle('Game Top-up Form');
+      .setCustomId(`topup_modal_${encodedGameName}`)
+      .setTitle('ฟอร์มบันทึกความทรงจำของเมม 📝');
 
     // 1. Total Amount
     const amountInput = new TextInputBuilder()
       .setCustomId('input_amount')
-      .setLabel('Total Amount (THB)')
+      .setLabel('จำนวนเงินที่เปย์ไป (THB)')
       .setStyle(TextInputStyle.Short)
-      .setPlaceholder('e.g. 3700')
+      .setPlaceholder('เช่น 3700')
       .setRequired(true);
 
     // 2. Date
     const dateInput = new TextInputBuilder()
       .setCustomId('input_date')
-      .setLabel('Date (DD/MM/YYYY)')
+      .setLabel('วันที่ (DD/MM/YYYY)')
       .setStyle(TextInputStyle.Short)
-      .setPlaceholder('Leave blank for today (e.g. 12/04/2026)')
+      .setPlaceholder('เว้นว่างไว้สำหรับวันนี้มิว! (เช่น 12/04/2026)')
       .setRequired(false);
 
     // 3. Items Detail
     const itemsInput = new TextInputBuilder()
       .setCustomId('input_items')
-      .setLabel('Items Detail')
+      .setLabel('รายละเอียดของที่ได้มา')
       .setStyle(TextInputStyle.Paragraph)
-      .setPlaceholder('e.g. Monthly Pass 150, Big Gem Pack 3550')
+      .setPlaceholder('เช่น พรแห่งดวงจันทร์ 150, แพ็กใหญ่ 3550')
       .setRequired(true);
 
     // 4. Remark
     const remarkInput = new TextInputBuilder()
       .setCustomId('input_remark')
-      .setLabel('Remark')
+      .setLabel('หมายเหตุเพิ่มเติม (ถ้ามี)')
       .setStyle(TextInputStyle.Short)
-      .setPlaceholder('Notes/Memo (Optional)')
+      .setPlaceholder('บันทึกความรู้สึกเพิ่มเติมให้เมมจดได้นะมิว!')
       .setRequired(false);
 
     modal.addComponents(
@@ -96,7 +101,7 @@ module.exports = {
     // 2. Validation
     const amount = parseFloat(amountStr);
     if (isNaN(amount) || amount < 0) {
-      return interaction.reply({ content: '❌ **Invalid Amount**: Please enter a valid positive number for the amount.', ephemeral: true });
+      return interaction.reply({ content: '❌ มิว! จำนวนเงินไม่ถูกต้องนะ ผู้บุกเบิกช่วยกรอกเป็นตัวเลขให้เมมหน่อยนะมิว!', ephemeral: true });
     }
 
     let finalDate = dateStr.trim();
@@ -107,7 +112,7 @@ module.exports = {
     } else {
       const dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[012])\/\d{4}$/;
       if (!dateRegex.test(finalDate)) {
-        return interaction.reply({ content: '❌ **Invalid Date Format**: Please use DD/MM/YYYY (e.g., 12/04/2026).', ephemeral: true });
+        return interaction.reply({ content: '❌ รูปแบบวันที่ไม่ถูกต้องมิว! รบกวนใช้รูปแบบ DD/MM/YYYY นะ (เช่น 12/04/2026)', ephemeral: true });
       }
     }
 
@@ -130,10 +135,10 @@ module.exports = {
 
         await sheets.addRecord(record);
         
-        await interaction.editReply(`✅ **Success!** Recorded **${amount} THB** for **${gameName}** on ${finalDate}.\nItems: ${itemsStr}`);
+        await interaction.editReply(`✅ เมมบันทึกความทรงจำให้เรียบร้อยแล้วมิว! ✨\nผู้บุกเบิกเปย์เกม **${gameName}** ไป **${amount} THB** (วันที่ ${finalDate})\n📝 ของที่ได้มา: ${itemsStr}`);
     } catch (error) {
         console.error(error);
-        await interaction.editReply('❌ **Database Error**: Failed to save to Google Sheets. Please contact admin.');
+        await interaction.editReply('❌ แงง... เมมทำความทรงจำหล่นหายมิว! บันทึกข้อมูลไม่ได้ (Database Error)');
     }
   }
 };

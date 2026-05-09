@@ -4,10 +4,10 @@ const sheets = require('../utils/googleSheets');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('summary')
-    .setDescription('View your top-up summary')
+    .setDescription('View top-up summary (ให้เมมสรุปยอดความทรงจำให้มิว!)')
     .addStringOption(option => 
       option.setName('game')
-        .setDescription('Optional: Filter by specific game')
+        .setDescription('Optional: Filter by specific game (ระบุชื่อเกมที่อยากดูมิว!)')
         .setAutocomplete(true)
         .setRequired(false)
     ),
@@ -32,12 +32,12 @@ module.exports = {
         const data = await sheets.getSummary(interaction.user.id, gameFilter);
         
         // Build Embed
-        let title = gameFilter ? `📊 Summary for ${gameFilter}` : `📊 Overall Top-up Summary`;
+        let title = gameFilter ? `📊 สรุปความทรงจำสำหรับเกม ${gameFilter} มิว!` : `📊 สรุปความทรงจำทั้งหมดที่เมมดูแลอยู่มิว!`;
         const embed = new EmbedBuilder()
             .setColor(Colors.Blue)
             .setTitle(title)
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
-            .addFields({ name: 'Total Spent', value: `**${data.total.toLocaleString()} THB**`, inline: false });
+            .addFields({ name: '✨ ยอดรวมความทรงจำ (Total Spent)', value: `**${data.total.toLocaleString()} THB**`, inline: false });
             
         // Show up to 5 recent transactions
         if (data.items.length > 0) {
@@ -48,15 +48,15 @@ module.exports = {
                 const gameLabel = gameFilter ? '' : `[${item.game}] `;
                 historyText += `• ${item.date} - ${gameLabel}**${item.amount} THB**\n  └ *${item.detail}*\n`;
             }
-            embed.addFields({ name: 'Recent Transactions', value: historyText || 'No history' });
+            embed.addFields({ name: '📝 ความทรงจำล่าสุดที่เมมจดไว้', value: historyText });
         } else {
-            embed.setDescription('No transactions found.');
+            embed.setDescription('อ๊ะ... เมมหาความทรงจำไม่เจอมิว! ผู้บุกเบิกยังไม่ได้ให้เมมบันทึกอะไรไว้เลย~');
         }
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         console.error(error);
-        await interaction.editReply('❌ **Database Error**: Failed to retrieve data from Google Sheets.');
+        await interaction.editReply('❌ แงง... เมมค้นหาความทรงจำไม่เจอมิว! ระบบขัดข้องนิดหน่อย (Database Error)');
     }
   }
 };
